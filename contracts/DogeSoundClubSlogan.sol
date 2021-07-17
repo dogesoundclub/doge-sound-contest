@@ -19,8 +19,8 @@ contract DogeSoundClubSlogan is Ownable, IDogeSoundClubSlogan {
     
     uint256 public holidayInterval = uint256(-1);
     uint256 public candidateInterval = uint256(-1);
+    uint256 public candidateMateCount = 20;
     uint256 public voteInterval = uint256(-1);
-    uint256 public voterMateCount = 20;
 
     mapping(uint256 => string[]) public candidates;
     mapping(uint256 => mapping(uint256 => uint256)) public votes;
@@ -30,58 +30,58 @@ contract DogeSoundClubSlogan is Ownable, IDogeSoundClubSlogan {
         mate = _mate;
     }
 
-    function changeCheckpoint(uint256 toInterval) internal {
-        if (holidayInterval != uint256(-1) && candidateInterval != uint256(-1) && voteInterval != uint256(-1)) {
-            if (checkpoint == 0) {
-                checkpoint = block.number;
-            } else {
-                
-                uint256 interval = holidayInterval + candidateInterval + voteInterval;
-                uint256 blocks = (block.number - checkpoint);
-                checkpointRound += blocks / interval;
+    function candidateCount(uint256 r) view external returns (uint256) {
+        return candidates[r].length;
+    }
 
-                uint256 remain = blocks % interval;
-                int256 diff = int256(toInterval) - int256(interval);
-                checkpoint = uint256(int256(block.number) - int256(remain) + diff);
-            }
+    function candidate(uint256 r, uint256 index) view external returns (string memory) {
+        return candidates[r][index];
+    }
+
+    function changeCheckpoint() internal {
+        if (checkpoint == 0 || holidayInterval == uint256(-1) || candidateInterval == uint256(-1) || voteInterval == uint256(-1)) {
+            checkpoint = block.number;
+        } else {
+            uint256 interval = holidayInterval.add(candidateInterval).add(voteInterval);
+            uint256 blocks = block.number.sub(checkpoint);
+            checkpointRound = checkpointRound.add(blocks.div(interval));
+            checkpoint = block.number.sub(blocks.mod(interval));
         }
     }
 
     function setHolidayInterval(uint256 interval) onlyOwner external {
-        changeCheckpoint(interval + candidateInterval + voteInterval);
+        changeCheckpoint();
         holidayInterval = interval;
     }
 
     function setCandidateInterval(uint256 interval) onlyOwner external {
-        changeCheckpoint(holidayInterval + interval + voteInterval);
+        changeCheckpoint();
         candidateInterval = interval;
     }
 
     function setVoteInterval(uint256 interval) onlyOwner external {
-        changeCheckpoint(holidayInterval + candidateInterval + interval);
+        changeCheckpoint();
         voteInterval = interval;
     }
 
-    function setVoterMateCount(uint256 count) onlyOwner external {
-        voterMateCount = count;
+    function setCandidateMateCount(uint256 count) onlyOwner external {
+        candidateMateCount = count;
     }
 
     function round() view public returns (uint256) {
-        return checkpointRound + (block.number - checkpoint) / (holidayInterval + candidateInterval + voteInterval);
+        return checkpointRound.add(block.number.sub(checkpoint).div(holidayInterval.add(candidateInterval).add(voteInterval)));
     }
 
-    function voteMate(uint256 r, uint256 count) internal {
+    function voteMate(uint256 r, uint256 count, uint256 balance) internal {
 
-        require(count > 0);
-        uint256 balance = mate.balanceOf(msg.sender);
-        require(balance >= count);
+        require(count > 0 && balance >= count);
 
         uint256 mateVotedCount = 0;
         for (uint256 index = 0; index < balance; index += 1) {
             uint256 id = mate.tokenOfOwnerByIndex(msg.sender, index);
             if (mateVoted[r][id] != true) {
                 mateVoted[r][id] = true;
-                mateVotedCount += 1;
+                mateVotedCount = mateVotedCount.add(1);
                 if (mateVotedCount == count) {
                     break;
                 }
@@ -92,8 +92,8 @@ contract DogeSoundClubSlogan is Ownable, IDogeSoundClubSlogan {
     }
 
     function period() view public returns(uint8) {
-        uint256 remain = (block.number - checkpoint) / (holidayInterval + candidateInterval + voteInterval);
-        if (remain >= holidayInterval + candidateInterval) {
+        uint256 remain = block.number.sub(checkpoint).mod(holidayInterval.add(candidateInterval).add(voteInterval));
+        if (remain >= holidayInterval.add(candidateInterval)) {
             return VOTE_PERIOD;
         } else if (remain >= candidateInterval) {
             return REGISTER_CANDIDATE_PERIOD;
@@ -105,34 +105,37 @@ contract DogeSoundClubSlogan is Ownable, IDogeSoundClubSlogan {
     function registerCandidate(string calldata slogan, uint256 count) external {
         require(period() == REGISTER_CANDIDATE_PERIOD);
 
-        uint256 r = round();
-        voteMate(r, count);
+        uint256 balance = mate.balanceOf(msg.sender);
+        require(balance >= candidateMateCount);
 
-        uint256 candidate = candidates[r].length;
+        uint256 r = round();
+        voteMate(r, count, balance);
+
+        uint256 _candidate = candidates[r].length;
         candidates[r].push(slogan);
-        votes[r][candidate] = count;
+        votes[r][_candidate] = count;
     }
 
-    function vote(uint256 candidate, uint256 count) external {
+    function vote(uint256 _candidate, uint256 count) external {
         require(period() == VOTE_PERIOD);
 
         uint256 r = round();
-        voteMate(r, count);
+        voteMate(r, count, mate.balanceOf(msg.sender));
         
-        votes[r][candidate] += count;
+        votes[r][_candidate] = votes[r][_candidate].add(count);
     }
 
-    function elected(uint256 r) external returns (uint256) {
+    function elected(uint256 r) view external returns (uint256) {
 
-        uint256 candidateCount = candidates[r].length;
+        uint256 _candidateCount = candidates[r].length;
         uint256 maxVote = 0;
         uint256 electedCandidate = 0;
 
-        for (uint256 candidate = 0; candidate < candidateCount; candidate += 1) {
-            uint256 v = votes[r][candidate];
+        for (uint256 _candidate = 0; _candidate < _candidateCount; _candidate += 1) {
+            uint256 v = votes[r][_candidate];
             if (maxVote < v) {
                 maxVote = v;
-                electedCandidate = candidate;
+                electedCandidate = _candidate;
             }
         }
 
