@@ -328,6 +328,7 @@ interface IDogeSoundClubSlogan {
     
     function round() view external returns (uint256);
     function period() view external returns (uint8);
+    function remains() view external returns (uint256);
     
     function registerCandidate(string calldata slogan, uint256 count) external;
     function vote(uint256 _candidate, uint256 count) external;
@@ -421,7 +422,7 @@ contract DogeSoundClubSlogan is Ownable, IDogeSoundClubSlogan {
         require(mateVotedCount == count);
     }
 
-    function period() view public returns(uint8) {
+    function period() view public returns (uint8) {
         uint256 remain = block.number.sub(checkpoint).mod(holidayInterval.add(candidateInterval).add(voteInterval));
         if (remain >= holidayInterval.add(candidateInterval)) {
             return VOTE_PERIOD;
@@ -429,6 +430,17 @@ contract DogeSoundClubSlogan is Ownable, IDogeSoundClubSlogan {
             return REGISTER_CANDIDATE_PERIOD;
         } else {
             return HOLIDAY_PERIOD;
+        }
+    }
+
+    function remains() view public returns (uint256) {
+        uint256 remain = block.number.sub(checkpoint).mod(holidayInterval.add(candidateInterval).add(voteInterval));
+        if (remain >= holidayInterval.add(candidateInterval)) {
+            return remain.sub(holidayInterval).sub(candidateInterval);
+        } else if (remain >= candidateInterval) {
+            return remain.sub(candidateInterval);
+        } else {
+            return remain;
         }
     }
 
