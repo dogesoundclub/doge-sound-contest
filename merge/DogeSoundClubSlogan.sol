@@ -328,6 +328,7 @@ interface IDogeSoundClubSlogan {
     function mateVoted(uint256 r, uint256 id) view external returns (bool);
     
     function round() view external returns (uint256);
+    function roundBlock(uint256 r) view external returns (uint256);
     function period() view external returns (uint8);
     function remains() view external returns (uint256);
     
@@ -403,6 +404,10 @@ contract DogeSoundClubSlogan is Ownable, IDogeSoundClubSlogan {
 
     function round() view public returns (uint256) {
         return checkpointRound.add(block.number.sub(checkpoint).div(holidayInterval.add(candidateInterval).add(voteInterval)));
+    }
+
+    function roundBlock(uint256 r) view external returns (uint256) {
+        return r.sub(checkpointRound).mul(holidayInterval.add(candidateInterval).add(voteInterval)).add(checkpoint);
     }
 
     function voteMate(uint256 r, uint256 count, uint256 balance) internal {

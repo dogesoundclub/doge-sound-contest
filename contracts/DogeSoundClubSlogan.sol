@@ -74,6 +74,10 @@ contract DogeSoundClubSlogan is Ownable, IDogeSoundClubSlogan {
         return checkpointRound.add(block.number.sub(checkpoint).div(holidayInterval.add(candidateInterval).add(voteInterval)));
     }
 
+    function roundBlock(uint256 r) view external returns (uint256) {
+        return r.sub(checkpointRound).mul(holidayInterval.add(candidateInterval).add(voteInterval)).add(checkpoint);
+    }
+
     function voteMate(uint256 r, uint256 count, uint256 balance) internal {
 
         require(count > 0 && balance >= count);

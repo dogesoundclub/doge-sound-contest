@@ -17,6 +17,7 @@ interface IDogeSoundClubSlogan {
     function mateVoted(uint256 r, uint256 id) view external returns (bool);
     
     function round() view external returns (uint256);
+    function roundBlock(uint256 r) view external returns (uint256);
     function period() view external returns (uint8);
     function remains() view external returns (uint256);
     
