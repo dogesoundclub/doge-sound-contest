@@ -96,7 +96,7 @@ contract DogeSoundClubSlogan is Ownable, IDogeSoundClubSlogan {
         uint256 remain = block.number.sub(checkpoint).mod(holidayInterval.add(candidateInterval).add(voteInterval));
         if (remain >= holidayInterval.add(candidateInterval)) {
             return VOTE_PERIOD;
-        } else if (remain >= candidateInterval) {
+        } else if (remain >= holidayInterval) {
             return REGISTER_CANDIDATE_PERIOD;
         } else {
             return HOLIDAY_PERIOD;
@@ -106,11 +106,11 @@ contract DogeSoundClubSlogan is Ownable, IDogeSoundClubSlogan {
     function remains() view public returns (uint256) {
         uint256 remain = block.number.sub(checkpoint).mod(holidayInterval.add(candidateInterval).add(voteInterval));
         if (remain >= holidayInterval.add(candidateInterval)) {
-            return remain.sub(holidayInterval).sub(candidateInterval);
-        } else if (remain >= candidateInterval) {
-            return remain.sub(candidateInterval);
+            return voteInterval.sub(remain.sub(holidayInterval).sub(candidateInterval));
+        } else if (remain >= holidayInterval) {
+            return candidateInterval.sub(remain.sub(holidayInterval));
         } else {
-            return remain;
+            return holidayInterval.sub(remain);
         }
     }
 
