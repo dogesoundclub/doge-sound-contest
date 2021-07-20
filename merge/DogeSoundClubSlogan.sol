@@ -322,6 +322,7 @@ interface IDogeSoundClubSlogan {
     
     function candidateCount(uint256 r) view external returns (uint256);
     function candidate(uint256 r, uint256 index) view external returns (string memory);
+    function totalVotes(uint256 r) view external returns (uint256);
     function votes(uint256 r, uint256 _candidate) view external returns (uint256);
     function mateVoted(uint256 r, uint256 id) view external returns (bool);
     
@@ -351,6 +352,7 @@ contract DogeSoundClubSlogan is Ownable, IDogeSoundClubSlogan {
     uint256 public voteInterval = uint256(-1);
 
     mapping(uint256 => string[]) public candidates;
+    mapping(uint256 => uint256) public totalVotes;
     mapping(uint256 => mapping(uint256 => uint256)) public votes;
     mapping(uint256 => mapping(uint256 => bool)) public mateVoted;
 
@@ -441,6 +443,7 @@ contract DogeSoundClubSlogan is Ownable, IDogeSoundClubSlogan {
 
         uint256 _candidate = candidates[r].length;
         candidates[r].push(slogan);
+        totalVotes[r] = totalVotes[r].add(count);
         votes[r][_candidate] = count;
     }
 
@@ -450,6 +453,7 @@ contract DogeSoundClubSlogan is Ownable, IDogeSoundClubSlogan {
         uint256 r = round();
         voteMate(r, count, mate.balanceOf(msg.sender));
         
+        totalVotes[r] = totalVotes[r].add(count);
         votes[r][_candidate] = votes[r][_candidate].add(count);
     }
 

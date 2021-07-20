@@ -23,6 +23,7 @@ contract DogeSoundClubSlogan is Ownable, IDogeSoundClubSlogan {
     uint256 public voteInterval = uint256(-1);
 
     mapping(uint256 => string[]) public candidates;
+    mapping(uint256 => uint256) public totalVotes;
     mapping(uint256 => mapping(uint256 => uint256)) public votes;
     mapping(uint256 => mapping(uint256 => bool)) public mateVoted;
 
@@ -113,6 +114,7 @@ contract DogeSoundClubSlogan is Ownable, IDogeSoundClubSlogan {
 
         uint256 _candidate = candidates[r].length;
         candidates[r].push(slogan);
+        totalVotes[r] = totalVotes[r].add(count);
         votes[r][_candidate] = count;
     }
 
@@ -122,6 +124,7 @@ contract DogeSoundClubSlogan is Ownable, IDogeSoundClubSlogan {
         uint256 r = round();
         voteMate(r, count, mate.balanceOf(msg.sender));
         
+        totalVotes[r] = totalVotes[r].add(count);
         votes[r][_candidate] = votes[r][_candidate].add(count);
     }
 

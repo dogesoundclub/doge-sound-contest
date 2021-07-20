@@ -133,6 +133,7 @@ describe("DogeSoundClubSlogan", () => {
 
             await slogan.vote(1, 10);
             expect(await slogan.elected(0)).to.be.equal(1)
+            expect(await slogan.totalVotes(0)).to.be.equal(50)
 
             await mine(200);
             expect(await slogan.elected(0)).to.be.equal(1)
