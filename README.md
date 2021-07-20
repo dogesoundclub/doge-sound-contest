@@ -3,7 +3,7 @@
 ## Mainnet
 
 ## Baobab
-0xd1865eAd26d426bcaCdBCAEe343c43beaAAB60a9
+0x7CeFc7d3F1962DFD4e02fF28B5b8F1B59F456543
 
 ## License
 [MIT](LICENSE)
