@@ -23,5 +23,5 @@ interface IDogeSoundClubSlogan {
     
     function registerCandidate(string calldata slogan, uint256 count) external;
     function vote(uint256 _candidate, uint256 count) external;
-    function elected(uint256 r) view external returns (uint256);    
+    function elected(uint256 r) view external returns (uint256);
 }
