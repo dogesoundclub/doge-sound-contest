@@ -11,6 +11,8 @@ interface IDogeSoundClubSlogan {
     
     function candidateCount(uint256 r) view external returns (uint256);
     function candidate(uint256 r, uint256 index) view external returns (string memory);
+    function candidateRegister(uint256 r, uint256 _candidate) view external returns (address);
+
     function totalVotes(uint256 r) view external returns (uint256);
     function userVotes(uint256 r, address user) view external returns (uint256);
     function votes(uint256 r, uint256 _candidate) view external returns (uint256);

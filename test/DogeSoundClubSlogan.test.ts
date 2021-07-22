@@ -19,7 +19,7 @@ describe("DogeSoundClubSlogan", () => {
     let slogan: DogeSoundClubSlogan;
 
     const provider = waffle.provider;
-    const [admin] = provider.getWallets();
+    const [admin, other] = provider.getWallets();
 
     beforeEach(async () => {
         mate = await deployContract(
@@ -107,8 +107,14 @@ describe("DogeSoundClubSlogan", () => {
 
         it("vote", async () => {
 
+            await mate.addMinter(other.address);
+
             for (let i = 0; i < 50; i += 1) {
                 await mate.mint(admin.address, i);
+            }
+
+            for (let i = 50; i < 80; i += 1) {
+                await mate.mint(other.address, i);
             }
 
             await slogan.setHolidayInterval(20);
@@ -126,14 +132,20 @@ describe("DogeSoundClubSlogan", () => {
             await slogan.registerCandidate("최고야!", 20);
             expect(await slogan.candidateCount(0)).to.be.equal(2)
             expect(await slogan.candidate(0, 1)).to.be.equal("최고야!")
+            
+            await slogan.connect(other).registerCandidate("오케이 땡큐!", 20);
+            expect(await slogan.candidateCount(0)).to.be.equal(3)
+            expect(await slogan.candidate(0, 2)).to.be.equal("오케이 땡큐!")
+            expect(await slogan.candidateRegister(0, 2)).to.be.equal(other.address)
 
             await network.provider.send("evm_setAutomine", [false]);
             await mine(20);
             await network.provider.send("evm_setAutomine", [true]);
 
-            await slogan.vote(1, 10);
+            await slogan.vote(2, 10);
+            await slogan.connect(other).vote(1, 10);
             expect(await slogan.elected(0)).to.be.equal(1)
-            expect(await slogan.totalVotes(0)).to.be.equal(50)
+            expect(await slogan.totalVotes(0)).to.be.equal(80)
             expect(await slogan.userVotes(0, admin.address)).to.be.equal(50)
 
             await mine(200);
