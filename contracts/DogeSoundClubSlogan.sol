@@ -80,8 +80,9 @@ contract DogeSoundClubSlogan is Ownable, IDogeSoundClubSlogan {
         return r.sub(checkpointRound).mul(holidayInterval.add(candidateInterval).add(voteInterval)).add(checkpoint);
     }
 
-    function voteMate(uint256 r, uint256 count, uint256 balance) internal {
+    function voteMate(uint256 r, uint256 count) internal {
 
+        uint256 balance = mate.balanceOf(msg.sender);
         require(count > 0 && balance >= count);
 
         uint256 mateVotedCount = 0;
@@ -122,73 +123,10 @@ contract DogeSoundClubSlogan is Ownable, IDogeSoundClubSlogan {
     }
 
     function registerCandidate(string calldata slogan, uint256 count) external {
-        require(period() == REGISTER_CANDIDATE_PERIOD);
-
-        uint256 balance = mate.balanceOf(msg.sender);
-        require(balance >= candidateMateCount);
+        require(period() == REGISTER_CANDIDATE_PERIOD && count >= candidateMateCount);
 
         uint256 r = round();
-        voteMate(r, count, balance);
-
-        uint256 _candidate = candidates[r].length;
-        candidateRegister[r][_candidate] = msg.sender;
-        candidates[r].push(slogan);
-        totalVotes[r] = totalVotes[r].add(count);
-        userVotes[r][msg.sender] = userVotes[r][msg.sender].add(count);
-        votes[r][_candidate] = count;
-    }
-
-    function test_registerCandidate_1(string calldata slogan, uint256 count) external {
-        require(period() == REGISTER_CANDIDATE_PERIOD);
-
-        uint256 balance = mate.balanceOf(msg.sender);
-        require(balance >= candidateMateCount);
-
-        uint256 r = round();
-        voteMate(r, count, balance);
-
-        uint256 _candidate = candidates[r].length;
-        candidateRegister[r][_candidate] = msg.sender;
-        candidates[r].push(slogan);
-        totalVotes[r] = totalVotes[r].add(count);
-        userVotes[r][msg.sender] = userVotes[r][msg.sender].add(count);
-        votes[r][_candidate] = count;
-    }
-
-    function test_registerCandidate_2(string calldata slogan, uint256 count) external {
-        require(period() == REGISTER_CANDIDATE_PERIOD);
-
-        uint256 balance = mate.balanceOf(msg.sender);
-        require(balance >= candidateMateCount);
-    }
-
-    function test_registerCandidate_3(string calldata slogan, uint256 count) external {
-        require(period() == REGISTER_CANDIDATE_PERIOD);
-
-        uint256 balance = mate.balanceOf(msg.sender);
-        require(balance >= candidateMateCount);
-
-        uint256 r = round();
-    }
-
-    function test_registerCandidate_4(string calldata slogan, uint256 count) external {
-        require(period() == REGISTER_CANDIDATE_PERIOD);
-
-        uint256 balance = mate.balanceOf(msg.sender);
-        require(balance >= candidateMateCount);
-
-        uint256 r = round();
-        voteMate(r, count, balance);
-    }
-
-    function test_registerCandidate_5(string calldata slogan, uint256 count) external {
-        require(period() == REGISTER_CANDIDATE_PERIOD);
-
-        uint256 balance = mate.balanceOf(msg.sender);
-        require(balance >= candidateMateCount);
-
-        uint256 r = round();
-        voteMate(r, count, balance);
+        voteMate(r, count);
 
         uint256 _candidate = candidates[r].length;
         candidateRegister[r][_candidate] = msg.sender;
@@ -202,35 +140,9 @@ contract DogeSoundClubSlogan is Ownable, IDogeSoundClubSlogan {
         require(period() == VOTE_PERIOD);
 
         uint256 r = round();
-        voteMate(r, count, mate.balanceOf(msg.sender));
-        
-        totalVotes[r] = totalVotes[r].add(count);
-        userVotes[r][msg.sender] = userVotes[r][msg.sender].add(count);
-        votes[r][_candidate] = votes[r][_candidate].add(count);
-    }
-    
-    function test_vote_1(uint256 _candidate, uint256 count) external {
-        require(period() == VOTE_PERIOD);
-    }
-    
-    function test_vote_2(uint256 _candidate, uint256 count) external {
-        require(period() == VOTE_PERIOD);
+        require(_candidate < candidates[r].length);
 
-        uint256 r = round();
-    }
-    
-    function test_vote_3(uint256 _candidate, uint256 count) external {
-        require(period() == VOTE_PERIOD);
-
-        uint256 r = round();
-        voteMate(r, count, mate.balanceOf(msg.sender));
-    }
-    
-    function test_vote_4(uint256 _candidate, uint256 count) external {
-        require(period() == VOTE_PERIOD);
-
-        uint256 r = round();
-        voteMate(r, count, mate.balanceOf(msg.sender));
+        voteMate(r, count);
         
         totalVotes[r] = totalVotes[r].add(count);
         userVotes[r][msg.sender] = userVotes[r][msg.sender].add(count);
